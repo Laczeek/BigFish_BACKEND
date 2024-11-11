@@ -1,10 +1,14 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import geoip from 'geoip-country';
 
 import User from '../models/User';
 import AppError from '../utils/AppError';
 
-const createAccount = async (req: Request, res: Response) => {
+const createAccount = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
 	const { nickname, email, password, passwordConfirm } = req.body;
 
 	try {
@@ -30,8 +34,7 @@ const createAccount = async (req: Request, res: Response) => {
 
 		res.status(201).json({ user: newUser });
 	} catch (err) {
-		
-		res.status(401).json({ err });
+		next(err);
 	}
 };
 
