@@ -12,6 +12,7 @@ const errorMiddleware = (
 	res: Response,
 	next: NextFunction
 ) => {
+	const errCopy = { ...err };
 	console.error('Error Occured!');
 	console.error(err.message);
 
@@ -38,6 +39,12 @@ const errorMiddleware = (
 		res.status(400).json({
 			errors: [{ field: fieldName, msg }],
 		});
+		return;
+	}
+
+	// INCORRECT OBJECT ID
+	if (err instanceof Error.CastError && err.kind === 'ObjectId') {
+		res.status(400).json({ error: 'Provided ObjectId is invalid.' });
 		return;
 	}
 

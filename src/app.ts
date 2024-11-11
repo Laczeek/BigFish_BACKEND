@@ -19,7 +19,7 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 
 app.all('*', notFoundMiddleware);
-app.use( errorMiddleware);
+app.use(errorMiddleware);
 
 mongoose.connect(MONGO_CONNECTION_URI).then(() => {
 	console.log('The connection to the mongo server has been established.');
