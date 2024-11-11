@@ -10,12 +10,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^5.1.1",
     "express": "^4.21.1",
+    "geoip-country": "^4.2.150",
     "mongoose": "^8.8.1",
     "morgan": "^1.10.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
     "@types/express": "^5.0.0",
+    "@types/geoip-country": "^4.0.2",
     "@types/mongoose": "^5.11.96",
     "@types/morgan": "^1.9.9"
   }
