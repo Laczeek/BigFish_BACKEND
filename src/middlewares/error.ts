@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { Error } from 'mongoose';
 import { MongoServerError } from 'mongodb';
+import { MulterError } from 'multer';
 
 import AppError from '../utils/AppError';
 
@@ -12,7 +13,6 @@ const errorMiddleware = (
 	res: Response,
 	next: NextFunction
 ) => {
-	const errCopy = { ...err };
 	console.error('Error Occured!');
 	console.error(err.message);
 
@@ -21,9 +21,10 @@ const errorMiddleware = (
 		err instanceof Error.ValidationError &&
 		err.name === 'ValidationError'
 	) {
+		const errClone = { ...err };
 		const validationErrors = Object.keys(err.errors).map((key) => ({
-			field: err.errors[key].path,
-			msg: err.errors[key].message,
+			field: errClone.errors[key].path,
+			msg: errClone.errors[key].message,
 		}));
 
 		res.status(400).json({ errors: validationErrors });
@@ -45,6 +46,14 @@ const errorMiddleware = (
 	// INCORRECT OBJECT ID
 	if (err instanceof Error.CastError && err.kind === 'ObjectId') {
 		res.status(400).json({ error: 'Provided ObjectId is invalid.' });
+		return;
+	}
+
+	// MULTER ERRORS
+	if (err instanceof MulterError) {
+		res.status(400).json({
+			errors: [{ field: 'image', msg: err.field || err.message }],
+		});
 		return;
 	}
 

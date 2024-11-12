@@ -7,6 +7,7 @@ import CustomFind from '../utils/CustomFind';
 import { signJWT, REFRESH_TOKEN_LIFESPAN } from '../utils/jwt-promisified';
 import { IUser } from '../interfaces/user';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
+import { cloudinaryUpload, cloudinaryDestroy } from '../utils/cloudinaryUpload';
 
 const createAccount = async (
 	req: Request,
@@ -57,7 +58,7 @@ const createAccount = async (
 		res.cookie(
 			'refreshToken',
 			refreshToken,
-			getCookieConfigObject(REFRESH_TOKEN_LIFESPAN)
+			getCookieConfigObject(1000 * REFRESH_TOKEN_LIFESPAN) // 1000 x BCS TIME MUST BE PRESENTS AS MS
 		);
 
 		res.status(201).json({ user: newUser, accessToken });
@@ -67,15 +68,36 @@ const createAccount = async (
 };
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
-	const { nickname, favMethod, description } = req.body;
 	const uid = req.user!._id;
+	const allowedFields = ['nickname', 'favMethod', 'description'];
+	const body = { ...req.body };
+
+	Object.keys(body).forEach((key) => {
+		if (!allowedFields.includes(key)) {
+			delete body[key];
+		}
+	});
 
 	try {
-		const updatedUser = await User.findByIdAndUpdate(
-			uid,
-			{ nickname, favMethod, description },
-			{ new: true, runValidators: true }
-		);
+		const user = await User.findById(uid);
+		if (!user) throw new AppError('It failed to update your data.', 500);
+
+		if (req.file) {
+			const cloudinaryResult = await cloudinaryUpload(
+				'avatars',
+				req.file.buffer
+			);
+
+			body.avatar = {
+				url: cloudinaryResult!.url,
+				public_id: cloudinaryResult!.public_id,
+			};
+
+			cloudinaryDestroy(user.avatar.public_id);
+		}
+
+		user.set(body);
+		const updatedUser = await user.save({ validateModifiedOnly: true });
 
 		res.status(200).json({ user: updatedUser });
 	} catch (err) {

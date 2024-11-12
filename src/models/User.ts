@@ -74,10 +74,16 @@ const userSchema = new Schema<IUser>({
 		},
 		default: 'not defined',
 	},
-	avatarURL: {
-		type: String,
-		default:
-			'https://static.everypixel.com/ep-pixabay/0329/8099/0858/84037/3298099085884037069-head.png',
+	avatar: {
+		type: {
+			url: String,
+			public_id: String,
+		},
+		default: {
+			url: 'https://res.cloudinary.com/dy4nafoiy/image/upload/v1731436857/avatars/iwqceqduss8oxa2acpzv.webp',
+			public_id: 'avatars/iwqceqduss8oxa2acpzv',
+		},
+		_id: false,
 	},
 	country: {
 		type: String,

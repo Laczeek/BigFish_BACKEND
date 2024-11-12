@@ -18,7 +18,10 @@ export interface IUser {
 	passwordConfirm: string;
 	description: string;
 	favMethod: TFishingMethods;
-	avatarURL: string;
+	avatar: {
+		url: string;
+		public_id: string;
+	};
 	country: string;
 	role: 'admin' | 'moderator' | 'user';
 	fishAmount: number;
