@@ -67,7 +67,7 @@ const createAccount = async (
 	}
 };
 
-const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 	const uid = req.user!._id;
 	const allowedFields = ['nickname', 'favMethod', 'description'];
 	const body = { ...req.body };
@@ -105,11 +105,22 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const getSingleUser = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+const getMe = async (req: Request, res: Response, next: NextFunction) => {
+	const uid = req.user!._id;
+	try {
+		const user = await User.findById(uid);
+		if (!user)
+			throw new AppError(
+				'Something went wrong while getting your data.',
+				500
+			);
+		res.status(200).json({ user });
+	} catch (err) {
+		next(err);
+	}
+};
+
+const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const uid = req.params.uid;
 
@@ -148,12 +159,12 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const getSearchUsers = async (
+const searchUsersByNickname = async (
 	req: Request,
 	res: Response,
 	next: NextFunction
 ) => {
-	const nickname = req.params.nick;
+	const nickname = req.params.nickname;
 	try {
 		const users = await User.find({
 			nickname: { $regex: nickname, $options: 'i' },
@@ -171,8 +182,9 @@ const getSearchUsers = async (
 
 export default {
 	createAccount,
-	getSingleUser,
-	updateUser,
+	getUserById,
+	updateMe,
+	getMe,
 	getUsers,
-	getSearchUsers,
+	searchUsersByNickname,
 };
