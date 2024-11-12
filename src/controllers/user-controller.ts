@@ -4,11 +4,7 @@ import geoip from 'geoip-country';
 import User from '../models/User';
 import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
-import {
-	signJWT,
-	ACCESS_TOKEN_LIFESPAN,
-	REFRESH_TOKEN_LIFESPAN,
-} from '../utils/jwt-promisified';
+import { signJWT, REFRESH_TOKEN_LIFESPAN } from '../utils/jwt-promisified';
 import { IUser } from '../interfaces/user';
 
 const CURRENT_ENV = process.env.CURRENT_ENV || 'PRODUCTION';
@@ -30,7 +26,6 @@ const cookieConfigObject =
 				sameSite: 'none' as const,
 				maxAge: REFRESH_TOKEN_LIFESPAN,
 		  };
-
 
 const createAccount = async (
 	req: Request,
@@ -60,23 +55,44 @@ const createAccount = async (
 
 		newUser.set('password', undefined);
 
-		const accessToken = await signJWT({
-			exp: ACCESS_TOKEN_LIFESPAN,
-			_id: newUser.id,
-			nickname: newUser.nickname,
-			role: newUser.role,
-		}); // 15 MINS
+		const accessToken = await signJWT(
+			{
+				_id: newUser.id,
+				nickname: newUser.nickname,
+				role: newUser.role,
+			},
+			'access'
+		); // 15 MINS
 
-		const refreshToken = await signJWT({
-			exp: REFRESH_TOKEN_LIFESPAN,
-			_id: newUser.id,
-			nickname: newUser.nickname,
-			role: newUser.role,
-		}); // 3 DAYS
+		const refreshToken = await signJWT(
+			{
+				_id: newUser.id,
+				nickname: newUser.nickname,
+				role: newUser.role,
+			},
+			'refresh'
+		); // 3 DAYS
 
 		res.cookie('refreshToken', refreshToken, cookieConfigObject);
 
 		res.status(201).json({ user: newUser, accessToken });
+	} catch (err) {
+		next(err);
+	}
+};
+
+const updateUser = async (req: Request, res: Response, next: NextFunction) => {
+	const { nickname, favMethod, description } = req.body;
+	const uid = req.user!._id;
+
+	try {
+		const updatedUser = await User.findByIdAndUpdate(
+			uid,
+			{ nickname, favMethod, description },
+			{ new: true, runValidators: true }
+		);
+
+		res.status(200).json({ user: updatedUser });
 	} catch (err) {
 		next(err);
 	}
@@ -149,6 +165,7 @@ const getSearchUsers = async (
 export default {
 	createAccount,
 	getSingleUser,
+	updateUser,
 	getUsers,
 	getSearchUsers,
 };
