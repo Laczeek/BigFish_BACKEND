@@ -2,8 +2,8 @@ import express from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
 
-// ROUTERS
 import userRouter from './routers/user-router';
+import authRouter from './routers/auth-router';
 
 // OTHER MIDDLEWARES
 import notFoundMiddleware from './middlewares/notfound';
@@ -17,6 +17,7 @@ app.use(morgan('dev'));
 
 app.use(express.json());
 app.use('/api/users', userRouter);
+app.use('/api/auth', authRouter);
 
 app.all('*', notFoundMiddleware);
 app.use(errorMiddleware);

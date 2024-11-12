@@ -4,8 +4,8 @@ import AppError from './AppError';
 
 interface ITokenPayload {
 	_id: string;
-	nickname: string;
-	role: 'admin' | 'moderator' | 'user';
+	nickname?: string;
+	role?: 'admin' | 'moderator' | 'user';
 }
 
 type TDecodedToken = ITokenPayload & { iat: number; exp: number };

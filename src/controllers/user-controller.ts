@@ -49,8 +49,6 @@ const createAccount = async (
 		const refreshToken = await signJWT(
 			{
 				_id: newUser.id,
-				nickname: newUser.nickname,
-				role: newUser.role,
 			},
 			'refresh'
 		); // 3 DAYS

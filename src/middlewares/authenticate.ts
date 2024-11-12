@@ -26,10 +26,11 @@ const authenticate = async (
 
 		const decodedToken = await verifyJWT(token);
 
+		// THIS ALWAYS SHOULD BE ACCESS TOKEN, SO THOSE FIELDS SHOULD BE PRESENT
 		req.user = {
 			_id: decodedToken._id,
-			nickname: decodedToken.nickname,
-			role: decodedToken.role,
+			nickname: decodedToken.nickname!,
+			role: decodedToken.role!,
 		};
 
 		next();
