@@ -6,26 +6,7 @@ import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
 import { signJWT, REFRESH_TOKEN_LIFESPAN } from '../utils/jwt-promisified';
 import { IUser } from '../interfaces/user';
-
-const CURRENT_ENV = process.env.CURRENT_ENV || 'PRODUCTION';
-
-const cookieConfigObject =
-	CURRENT_ENV === 'DEVELOPMENT'
-		? {
-				httpOnly: false,
-				path: '/',
-				domain: 'localhost',
-				secure: false,
-				sameSite: 'lax' as const,
-				maxAge: REFRESH_TOKEN_LIFESPAN,
-		  }
-		: {
-				httpOnly: true,
-				path: '/',
-				secure: true,
-				sameSite: 'none' as const,
-				maxAge: REFRESH_TOKEN_LIFESPAN,
-		  };
+import getCookieConfigObject from '../utils/getCookieConfigObject';
 
 const createAccount = async (
 	req: Request,
@@ -73,7 +54,11 @@ const createAccount = async (
 			'refresh'
 		); // 3 DAYS
 
-		res.cookie('refreshToken', refreshToken, cookieConfigObject);
+		res.cookie(
+			'refreshToken',
+			refreshToken,
+			getCookieConfigObject(REFRESH_TOKEN_LIFESPAN)
+		);
 
 		res.status(201).json({ user: newUser, accessToken });
 	} catch (err) {
