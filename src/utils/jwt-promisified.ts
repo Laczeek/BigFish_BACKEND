@@ -1,4 +1,5 @@
 import jwt, { JwtPayload } from 'jsonwebtoken';
+
 import AppError from './AppError';
 
 interface IUnknowObject {
@@ -7,6 +8,8 @@ interface IUnknowObject {
 }
 
 const SECRET_KEY = process.env.SECRET_KEY!;
+export const REFRESH_TOKEN_LIFESPAN = 1000 * 60 * 60 * 24 * 3;
+export const ACCESS_TOKEN_LIFESPAN = 1000 * 60 * 15;
 
 export const signJWT = (payload: IUnknowObject): Promise<string> => {
 	return new Promise((resolve, reject) => {
@@ -14,7 +17,6 @@ export const signJWT = (payload: IUnknowObject): Promise<string> => {
 			if (err) {
 				return reject(err);
 			}
-            token = undefined;
 			if (!token)
 				return reject(
 					new AppError('The token has not been created.', 500)
