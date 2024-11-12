@@ -32,7 +32,7 @@ const authenticate = async (
 			role: decodedToken.role,
 		};
 
-        next();
+		next();
 	} catch (err) {
 		next(err);
 	}
