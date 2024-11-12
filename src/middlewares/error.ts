@@ -56,7 +56,7 @@ const errorMiddleware = (
 
 	// NOT EXPECTED ERRORS
 	if (CURRENT_ENV === 'DEVELOPMENT') {
-		res.status(500).json({ error: err });
+		res.status(500).json({ error: err.message });
 	} else {
 		res.status(500).json({ error: 'Somethig went wrong on the server.' });
 	}

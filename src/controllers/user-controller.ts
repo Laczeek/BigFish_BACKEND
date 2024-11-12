@@ -4,6 +4,7 @@ import geoip from 'geoip-country';
 import User from '../models/User';
 import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
+import { signJWT } from '../utils/jwt-promisified';
 import { IUser } from '../interfaces/user';
 
 const createAccount = async (
@@ -33,6 +34,9 @@ const createAccount = async (
 		await newUser.save({ j: true, w: 2 });
 
 		newUser.set('password', undefined);
+
+		const token = await signJWT({exp: 70, nickname: 'chuj'});
+		console.log(token);
 
 		res.status(201).json({ user: newUser });
 	} catch (err) {
