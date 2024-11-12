@@ -77,7 +77,7 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
 
 		const users = await customFind.query;
 
-		res.json({ users });
+		res.json({length: users.length, users });
 	} catch (err) {
 		next(err);
 	}
@@ -90,29 +90,9 @@ const getSearchUsers = async (
 ) => {
 	const nickname = req.params.nick;
 	try {
-		const allowedQueryFields = [
-			'country',
-			'hooksAmount',
-			'fishAmount',
-			'nickname',
-		];
-
-		const filter = {
+		const users = await User.find({
 			nickname: { $regex: nickname, $options: 'i' },
-		};
-
-		const customFind = new CustomFind<IUser>(
-			User,
-			req.query,
-			allowedQueryFields,
-			filter
-		)
-			.projection()
-			.sort()
-			.limit()
-			.skip();
-
-		const users = await customFind.query;
+		}).select('nickname avatarURL competition').limit(10);
 
 		res.status(200).json({ users, length: users.length });
 	} catch (err) {
