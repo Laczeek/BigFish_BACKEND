@@ -1,6 +1,6 @@
 const CURRENT_ENV = process.env.CURRENT_ENV || 'PRODUCTION';
 
-const getCookieConfigObject = (tokenLifespan: number) => {
+const getCookieConfigObject = (tokenLifespan?: number, isClearing?: boolean) => {
 	const cookieConfigObject =
 		CURRENT_ENV === 'DEVELOPMENT'
 			? {
@@ -9,7 +9,7 @@ const getCookieConfigObject = (tokenLifespan: number) => {
 					domain: 'localhost',
 					secure: false,
 					sameSite: 'lax' as const,
-					maxAge: tokenLifespan,
+					...(isClearing ? {} : { maxAge: tokenLifespan }),
 			  }
 			: {
 					httpOnly: true,
@@ -17,6 +17,7 @@ const getCookieConfigObject = (tokenLifespan: number) => {
 					secure: true,
 					sameSite: 'none' as const,
 					maxAge: tokenLifespan,
+					...(isClearing ? {} : { maxAge: tokenLifespan }),
 			  };
 	return cookieConfigObject;
 };

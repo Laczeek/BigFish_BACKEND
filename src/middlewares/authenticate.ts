@@ -26,7 +26,7 @@ const authenticate = async (
 
 		const decodedToken = await verifyJWT(token, 'access');
 
-		// THIS ALWAYS SHOULD BE ACCESS TOKEN, SO THOSE FIELDS SHOULD BE PRESENT
+		// THIS ALWAYS SHOULD BE ACCESS TOKEN, SO THOSE FIELDS MUST BE PRESENT
 		req.user = {
 			_id: decodedToken._id,
 			nickname: decodedToken.nickname!,
