@@ -3,14 +3,18 @@ import bcrypt from 'bcrypt';
 
 import User from '../models/User';
 import AppError from '../utils/AppError';
-import { signJWT, REFRESH_TOKEN_LIFESPAN } from '../utils/jwt-promisified';
+import {
+	signJWT,
+	REFRESH_TOKEN_LIFESPAN,
+	verifyJWT,
+} from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
 	const { email, password } = req.body;
 	try {
 		if (!email || !password)
-			throw new AppError('Invalid credentials.', 400); 
+			throw new AppError('Invalid credentials.', 400);
 
 		const user = await User.findOne({ email }).select('+password');
 		if (!user) throw new AppError('Invalid credentials', 401);
@@ -37,6 +41,34 @@ const login = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
+const refreshToken = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const cookieToken = req.cookies.refreshToken;
+	try {
+		if (!cookieToken) throw new AppError('Refresh token is missing. Please log in again.', 401); 
+
+		//TODO - CHECK IF TOKEN EXISTS IN BLACK LIST OF REFRESH TOKENS
+
+		const decodedToken = await verifyJWT(cookieToken, 'refresh');
+
+		const user = await User.findById(decodedToken._id);
+		if (!user) throw new AppError('User associated with this token no longer exists. Please log in again.', 401); 
+
+		const accessToken = await signJWT(
+			{ _id: user.id, nickname: user.nickname, role: user.role },
+			'access'
+		);
+
+		res.status(200).json({ accessToken });
+	} catch (err) {
+		next(err);
+	}
+};
+
 export default {
 	login,
+	refreshToken,
 };

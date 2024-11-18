@@ -42,7 +42,10 @@ export const signJWT = (
 	});
 };
 
-export const verifyJWT = (token: string): Promise<TDecodedToken> => {
+export const verifyJWT = (
+	token: string,
+	type: 'access' | 'refresh'
+): Promise<TDecodedToken> => {
 	return new Promise((resolve, reject) => {
 		jwt.verify(token, SECRET_KEY, (err, decoded) => {
 			if (err) {
@@ -50,17 +53,14 @@ export const verifyJWT = (token: string): Promise<TDecodedToken> => {
 
 				if (err instanceof jwt.TokenExpiredError) {
 					customError = new AppError(
-						'Your authentication token has expired.',
+						`Your ${type} token has expired.`,
 						401
 					);
 				} else if (err instanceof jwt.JsonWebTokenError) {
-					customError = new AppError(
-						'Invalid authentication token.',
-						401
-					);
+					customError = new AppError(`Invalid ${type} token.`, 401);
 				} else {
 					customError = new AppError(
-						'An error occurred while verifying your authentication token.',
+						`An error occurred while verifying your ${type} token.`,
 						500
 					);
 				}

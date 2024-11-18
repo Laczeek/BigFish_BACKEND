@@ -1,11 +1,11 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
+import cookieParser from 'cookie-parser';
 
 import userRouter from './routers/user-router';
 import authRouter from './routers/auth-router';
 
-// OTHER MIDDLEWARES
 import notFoundMiddleware from './middlewares/notfound';
 import errorMiddleware from './middlewares/error';
 
@@ -13,13 +13,16 @@ const PORT = process.env.PORT || 8080;
 const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
 const app = express();
-app.use(morgan('dev'));
 
+app.use(morgan('dev'));
+app.use(cookieParser());
 app.use(express.json());
+
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
 
 app.all('*', notFoundMiddleware);
+
 app.use(errorMiddleware);
 
 mongoose.connect(MONGO_CONNECTION_URI).then(() => {
