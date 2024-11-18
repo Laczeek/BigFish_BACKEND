@@ -1,69 +1,10 @@
 import { NextFunction, Request, Response } from 'express';
-import geoip from 'geoip-country';
 
 import User from '../models/User';
 import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
-import { signJWT, REFRESH_TOKEN_LIFESPAN } from '../utils/jwt-promisified';
 import { IUser } from '../interfaces/user';
-import getCookieConfigObject from '../utils/getCookieConfigObject';
 import { cloudinaryUpload, cloudinaryDestroy } from '../utils/cloudinaryUpload';
-
-const createAccount = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
-	const { nickname, email, password, passwordConfirm } = req.body;
-
-	try {
-		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
-		const userCountry = geoip.lookup(uip)?.country;
-		if (!userCountry)
-			throw new AppError(
-				'Failed to get your country. Report the problem to the administration.',
-				500
-			);
-
-		const newUser = new User({
-			nickname,
-			email,
-			password,
-			passwordConfirm,
-			country: userCountry,
-		});
-
-		await newUser.save({ j: true, w: 2 });
-
-		newUser.set('password', undefined);
-
-		const accessToken = await signJWT(
-			{
-				_id: newUser.id,
-				nickname: newUser.nickname,
-				role: newUser.role,
-			},
-			'access'
-		); // 15 MINS
-
-		const refreshToken = await signJWT(
-			{
-				_id: newUser.id,
-			},
-			'refresh'
-		); // 3 DAYS
-
-		res.cookie(
-			'refreshToken',
-			refreshToken,
-			getCookieConfigObject(1000 * REFRESH_TOKEN_LIFESPAN) // 1000 x BCS TIME MUST BE PRESENTS AS MS
-		);
-
-		res.status(201).json({ user: newUser, accessToken });
-	} catch (err) {
-		next(err);
-	}
-};
 
 const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 	const uid = req.user!._id;
@@ -179,7 +120,6 @@ const searchUsersByNickname = async (
 // CONTROLLERS FOR API/USERS/ME (GET & PUT)
 
 export default {
-	createAccount,
 	getUserById,
 	updateMe,
 	getMe,

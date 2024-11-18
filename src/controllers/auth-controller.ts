@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
+import geoip from 'geoip-country';
 
 import User from '../models/User';
 import BlacklistedToken from '../models/BlacklistedToken';
@@ -10,6 +11,62 @@ import {
 	verifyJWT,
 } from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
+
+const signup = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	const { nickname, email, password, passwordConfirm } = req.body;
+
+	try {
+		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
+		const userCountry = geoip.lookup(uip)?.country;
+		if (!userCountry)
+			throw new AppError(
+				'Failed to get your country. Report the problem to the administration.',
+				500
+			);
+
+		const newUser = new User({
+			nickname,
+			email,
+			password,
+			passwordConfirm,
+			country: userCountry,
+		});
+
+		await newUser.save({ j: true, w: 2 });
+
+		newUser.set('password', undefined);
+
+		const accessToken = await signJWT(
+			{
+				_id: newUser.id,
+				nickname: newUser.nickname,
+				role: newUser.role,
+			},
+			'access'
+		); // 15 MINS
+
+		const refreshToken = await signJWT(
+			{
+				_id: newUser.id,
+			},
+			'refresh'
+		); // 3 DAYS
+
+		res.cookie(
+			'refreshToken',
+			refreshToken,
+			getCookieConfigObject(1000 * REFRESH_TOKEN_LIFESPAN) // 1000 x BCS TIME MUST BE PRESENTS AS MS
+		);
+
+		res.status(201).json({ user: newUser, accessToken });
+	} catch (err) {
+		next(err);
+	}
+};
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
 	const { email, password } = req.body;
@@ -98,6 +155,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 export default {
+	signup,
 	login,
 	refreshToken,
 	logout,

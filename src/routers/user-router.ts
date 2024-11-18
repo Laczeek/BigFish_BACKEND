@@ -5,7 +5,7 @@ import authenticate from '../middlewares/authenticate';
 import upload from '../utils/multer-config';
 
 const router = express.Router();
-router.post('/', userController.createAccount);
+
 router.get('/', userController.getUsers);
 
 // PROTECTED ENDPOINTS
