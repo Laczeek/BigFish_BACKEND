@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 
 import User from '../models/User';
+import BlacklistedToken from '../models/BlacklistedToken';
 import AppError from '../utils/AppError';
 import {
 	signJWT,
@@ -9,7 +10,6 @@ import {
 	verifyJWT,
 } from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
-import BlacklistedToken from '../models/BlacklistedToken';
 
 const login = async (req: Request, res: Response, next: NextFunction) => {
 	const { email, password } = req.body;
@@ -55,7 +55,11 @@ const refreshToken = async (
 				401
 			);
 
-		//TODO - CHECK IF TOKEN EXISTS IN BLACK LIST OF REFRESH TOKENS
+		const isTokenInBlacklist = await BlacklistedToken.findOne({
+			token: cookieRefreshToken,
+		});
+		if (isTokenInBlacklist)
+			throw new AppError("You can't get a new access token.", 401);
 
 		const decodedToken = await verifyJWT(cookieRefreshToken, 'refresh');
 
@@ -96,5 +100,5 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 export default {
 	login,
 	refreshToken,
-	logout
+	logout,
 };
