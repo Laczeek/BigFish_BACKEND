@@ -1,8 +1,8 @@
-const CURRENT_ENV = process.env.CURRENT_ENV || 'PRODUCTION';
+const NODE_ENV = process.env.NODE_ENV || 'PRODUCTION';
 
 const getCookieConfigObject = (tokenLifespan?: number, isClearing?: boolean) => {
 	const cookieConfigObject =
-		CURRENT_ENV === 'DEVELOPMENT'
+		NODE_ENV === 'DEVELOPMENT'
 			? {
 					httpOnly: false,
 					path: '/',

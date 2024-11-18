@@ -5,7 +5,7 @@ import { MulterError } from 'multer';
 
 import AppError from '../utils/AppError';
 
-const CURRENT_ENV = process.env.CURRENT_ENV || 'PRODUCTION';
+const NODE_ENV = process.env.NODE_ENV || 'PRODUCTION';
 
 const errorMiddleware = (
 	err: Error,
@@ -64,7 +64,7 @@ const errorMiddleware = (
 	}
 
 	// NOT EXPECTED ERRORS
-	if (CURRENT_ENV === 'DEVELOPMENT') {
+	if (NODE_ENV === 'DEVELOPMENT') {
 		res.status(500).json({ error: err.message });
 	} else {
 		res.status(500).json({ error: 'Somethig went wrong on the server.' });
