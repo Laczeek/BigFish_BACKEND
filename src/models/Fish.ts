@@ -61,6 +61,10 @@ const fishSchema = new Schema<IFish>({
 			enum: ['Point'],
 			required: [true, 'Location type is required.'],
 		},
+        address: {
+            type: String,
+            required: [true, 'Location address is required.']
+        },
 		coordinates: {
 			type: [Number],
 			validate: {

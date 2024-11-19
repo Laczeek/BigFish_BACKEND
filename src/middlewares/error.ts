@@ -58,6 +58,13 @@ const errorMiddleware = (
 	}
 
 	// OPERATIONAL ERRORS
+	if (err instanceof AppError && err.field) {
+		res.status(err.code).json({
+			errors: [{ field: err.field, msg: err.message }],
+		});
+		return;
+	}
+
 	if (err instanceof AppError) {
 		res.status(err.code).json({ error: err.message });
 		return;

@@ -16,6 +16,7 @@ export interface IFish {
 	whenCaught: Date;
 	location: {
 		type: 'Point';
+        address: string;
 		coordinates: [number, number]; // UNION TYPE
 	};
 }
