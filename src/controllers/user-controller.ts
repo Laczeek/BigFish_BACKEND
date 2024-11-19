@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { ClientSession, ObjectId, startSession } from 'mongoose';
+import { UploadApiResponse } from 'cloudinary';
 
 import User from '../models/User';
 import AppError from '../utils/AppError';
@@ -11,6 +12,8 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 	const uid = req.user!._id;
 	const allowedFields = ['nickname', 'favMethod', 'description'];
 	const body = { ...req.body };
+	let cloudinaryResult: null | UploadApiResponse | undefined = null;
+	let previousImagePublicId: null | string = null;
 
 	Object.keys(body).forEach((key) => {
 		if (!allowedFields.includes(key)) {
@@ -23,24 +26,32 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 		if (!user) throw new AppError('It failed to update your data.', 500);
 
 		if (req.file) {
-			const cloudinaryResult = await cloudinaryUpload(
+			cloudinaryResult = await cloudinaryUpload(
 				'avatars',
 				req.file.buffer
 			);
+
+			previousImagePublicId = user.avatar.public_id;
 
 			body.avatar = {
 				url: cloudinaryResult!.url,
 				public_id: cloudinaryResult!.public_id,
 			};
-
-			cloudinaryDestroy(user.avatar.public_id);
 		}
 
 		user.set(body);
 		const updatedUser = await user.save({ validateModifiedOnly: true });
 
+		if (req.file && cloudinaryResult && previousImagePublicId) {
+			cloudinaryDestroy(previousImagePublicId);
+		}
+
 		res.status(200).json({ user: updatedUser });
 	} catch (err) {
+		if (req.file && cloudinaryResult) {
+			cloudinaryDestroy(cloudinaryResult.public_id);
+		}
+
 		next(err);
 	}
 };
