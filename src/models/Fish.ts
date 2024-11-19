@@ -10,47 +10,40 @@ const fishSchema = new Schema<IFish>({
 	},
 	measurement: {
 		type: {
-			type: {
-				type: String,
-				enum: {
-					values: ['weight', 'length'],
-					message:
-						'The {VALUE} is not the correct type of measurement.',
-				},
-				required: [true, 'Please enter the type of measurement.'],
+			type: String,
+			enum: {
+				values: ['weight', 'length'],
+				message: 'The {VALUE} is not the correct type of measurement.',
 			},
-			unit: {
-				type: String,
-				enum: {
-					values: ['kg', 'cm', 'lb', 'inch'],
-					message:
-						'The {VALUE} is not the correct unit of measurement.',
-				},
-				required: [true, 'Please enter the unit of measurement.'],
-			},
-			value: {
-				type: Number,
-				required: [true, 'Please enter the value of measurement.'],
-			},
+			required: [true, 'Please enter the type of measurement.'],
 		},
-		required: true,
+		unit: {
+			type: String,
+			enum: {
+				values: ['kg', 'cm', 'lb', 'inch'],
+				message: 'The {VALUE} is not the correct unit of measurement.',
+			},
+			required: [true, 'Please enter the unit of measurement.'],
+		},
+		value: {
+			type: Number,
+			required: [true, 'Please enter the value of measurement.'],
+		},
 	},
 	description: {
 		type: String,
 		maxlength: [500, 'Description cannot be longer that 500 characters.'],
 	},
 	image: {
-		type: {
-			url: {
-				type: String,
-				required: [true, 'Image URL is required.'],
-			},
-			public_id: {
-				type: String,
-				required: [true, 'Image public_id is required.'],
-			},
+		url: {
+			type: String,
+			required: [true, 'Image URL is required.'],
 		},
-		required: true,
+		public_id: {
+			type: String,
+			required: [true, 'Image public_id is required.'],
+		},
+
 		_id: false,
 	},
 	user: {
@@ -64,26 +57,24 @@ const fishSchema = new Schema<IFish>({
 	},
 	location: {
 		type: {
-			type: {
-				type: String,
-				enum: ['Point'],
-				required: [true, 'Location type is required.'],
-			},
-			coordinates: {
-				type: [Number],
-				validate: {
-					validator: function (val) {
-						return val.length === 2;
-					},
-					message:
-						'Coordinates must be an array of two numbers [longitude, latitude].',
-				},
-				required: [true, 'Coordinates are required.'],
-			},
+			type: String,
+			enum: ['Point'],
+			required: [true, 'Location type is required.'],
 		},
-		required: true,
-		_id: false,
+		coordinates: {
+			type: [Number],
+			validate: {
+				validator: function (val) {
+					return val.length === 2;
+				},
+				message:
+					'Coordinates must be an array of two numbers [longitude, latitude].',
+			},
+			required: [true, 'Coordinates are required.'],
+		},
+
+		
 	},
 });
 
-export default model('Fish', fishSchema);
+export default model<IFish>('Fish', fishSchema);
