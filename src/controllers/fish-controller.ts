@@ -82,6 +82,41 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
+const removeFish = async (req: Request, res: Response, next: NextFunction) => {
+	const fid = req.params.fid;
+	let session: ClientSession | null = null;
+	try {
+		session = await startSession();
+		session.startTransaction();
+
+		const deletedFish = await Fish.findByIdAndDelete(fid, { session });
+		if (!deletedFish)
+			throw new AppError('Fish for provided id does not exist.', 400);
+
+		cloudinaryDestroy(deletedFish.image.public_id);
+
+		await User.findByIdAndUpdate(
+			req.user!._id,
+			{ $inc: { fishAmount: -1 } },
+			{ session }
+		);
+
+		await session.commitTransaction();
+
+		res.status(204).send();
+	} catch (err) {
+		if (session) {
+			await session.abortTransaction();
+		}
+		next(err);
+	} finally {
+		if (session) {
+			await session.endSession();
+		}
+	}
+};
+
 export default {
 	addFish,
+	removeFish,
 };
