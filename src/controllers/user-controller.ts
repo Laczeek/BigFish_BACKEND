@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import { ClientSession, ObjectId, startSession } from 'mongoose';
 
 import User from '../models/User';
 import AppError from '../utils/AppError';
@@ -117,7 +118,59 @@ const searchUsersByNickname = async (
 	}
 };
 
-// CONTROLLERS FOR API/USERS/ME (GET & PUT)
+const observeUser = async (req: Request, res: Response, next: NextFunction) => {
+	const uid = req.params.uid;
+	let session: ClientSession | null = null;
+	try {
+		if (uid === req.user!._id)
+			throw new AppError('You cannot observe your self.', 400);
+
+		let authenticatedUser = await User.findById(req.user!._id);
+		if (!authenticatedUser)
+			throw new AppError(
+				'Something went wrong. Please log in again.',
+				500
+			);
+
+		session = await startSession();
+		session.startTransaction();
+
+		const observedUserIndex = authenticatedUser.myHooks.findIndex(
+			(oid) => oid.toString() === uid
+		);
+
+		if (observedUserIndex !== -1) {
+			await User.findByIdAndUpdate(
+				uid,
+				{ $inc: { hooksAmount: -1 } },
+				{ session }
+			);
+			authenticatedUser.myHooks.splice(observedUserIndex, 1);
+		} else {
+			await User.findByIdAndUpdate(
+				uid,
+				{ $inc: { hooksAmount: 1 } },
+				{ session }
+			);
+			authenticatedUser.myHooks.push(uid as unknown as ObjectId);
+		}
+
+		await authenticatedUser.save({ validateModifiedOnly: true, session });
+
+		await session.commitTransaction();
+
+		res.status(200).json({ myHooks: authenticatedUser.myHooks });
+	} catch (err) {
+		if (session) {
+			await session.abortTransaction();
+		}
+		next(err);
+	} finally {
+		if (session) {
+			await session.endSession();
+		}
+	}
+};
 
 export default {
 	getUserById,
@@ -125,4 +178,5 @@ export default {
 	getMe,
 	getUsers,
 	searchUsersByNickname,
+	observeUser,
 };

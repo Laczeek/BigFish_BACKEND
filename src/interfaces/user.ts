@@ -25,7 +25,7 @@ export interface IUser {
 	country: string;
 	role: 'admin' | 'moderator' | 'user';
 	fishAmount: number;
-	myHooks: [ObjectId];
+	myHooks: ObjectId[];
     hooksAmount: number;
     competition: ObjectId;
     competitionWins: number;

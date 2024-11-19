@@ -16,6 +16,7 @@ router.patch(
 	userController.updateMe
 );
 router.get('/me', authenticate, userController.getMe);
+router.get('/observe/:uid', authenticate, userController.observeUser);
 // PROTECTED ENDPOINTS
 
 router.get('/search/:nickname', userController.searchUsersByNickname);
