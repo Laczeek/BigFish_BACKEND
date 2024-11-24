@@ -61,10 +61,14 @@ const fishSchema = new Schema<IFish>({
 			enum: ['Point'],
 			required: [true, 'Location type is required.'],
 		},
-        address: {
-            type: String,
-            required: [true, 'Location address is required.']
-        },
+		address: {
+			type: String,
+			required: [true, 'Location address is required.'],
+		},
+		countryCode: {
+			type: String,
+			required: [true, 'Country code is required.'],
+		},
 		coordinates: {
 			type: [Number],
 			validate: {
@@ -76,8 +80,6 @@ const fishSchema = new Schema<IFish>({
 			},
 			required: [true, 'Coordinates are required.'],
 		},
-
-		
 	},
 });
 

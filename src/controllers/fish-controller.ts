@@ -6,6 +6,7 @@ import Fish from '../models/Fish';
 import User from '../models/User';
 import AppError from '../utils/AppError';
 import { cloudinaryDestroy, cloudinaryUpload } from '../utils/cloudinaryUpload';
+import CustomFind from '../utils/CustomFind';
 
 const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	const {
@@ -44,10 +45,11 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		const resData = await geoResponse.json();
         const geoData = resData.results[0];
         if(!geoData) throw new AppError('Something went wrong when finding the location.', 500);
-
+		
 		const location = {
 			type: 'Point',
 			address: geoData.formatted,
+			countryCode: geoData.country_code,
 			coordinates: [geoData.lon, geoData.lat],
 		};
 
@@ -132,6 +134,14 @@ const removeFish = async (req: Request, res: Response, next: NextFunction) => {
 		}
 	}
 };
+
+const getFish = async(req: Request, res: Response, next: NextFunction) => {
+	try {
+		const allowedFields = ['measurementType', 'measurementValue', 'whenCaught']
+	} catch (err) {
+		next(err);
+	}
+}
 
 export default {
 	addFish,

@@ -17,6 +17,7 @@ export interface IFish {
 	location: {
 		type: 'Point';
         address: string;
+		countryCode: string;
 		coordinates: [number, number]; // UNION TYPE
 	};
 }
