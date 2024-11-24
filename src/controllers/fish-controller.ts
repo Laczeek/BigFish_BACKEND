@@ -7,6 +7,7 @@ import User from '../models/User';
 import AppError from '../utils/AppError';
 import { cloudinaryDestroy, cloudinaryUpload } from '../utils/cloudinaryUpload';
 import CustomFind from '../utils/CustomFind';
+import { IFish } from '../interfaces/fish';
 
 const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	const {
@@ -43,9 +44,13 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		);
 
 		const resData = await geoResponse.json();
-        const geoData = resData.results[0];
-        if(!geoData) throw new AppError('Something went wrong when finding the location.', 500);
-		
+		const geoData = resData.results[0];
+		if (!geoData)
+			throw new AppError(
+				'Something went wrong when finding the location.',
+				500
+			);
+
 		const location = {
 			type: 'Point',
 			address: geoData.formatted,
@@ -135,15 +140,49 @@ const removeFish = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const getFish = async(req: Request, res: Response, next: NextFunction) => {
+const getFish = async (req: Request, res: Response, next: NextFunction) => {
+	const allowedFields = [
+		'name',
+		'whenCaught',
+		'measurement.type',
+		'measurement.unit',
+		'measurement.value',
+		'location.countryCode',
+	];
 	try {
-		const allowedFields = ['measurementType', 'measurementValue', 'whenCaught']
+		let addressFilter = {};
+		if (
+			req.query['location.address'] &&
+			typeof req.query['location.address'] === 'string'
+		) {
+			addressFilter = {
+				'location.address': {
+					$regex: req.query['location.address'],
+					$options: 'i',
+				},
+			};
+		}
+
+		const customFind = new CustomFind<IFish>(
+			Fish,
+			req.query,
+			allowedFields,
+			addressFilter
+		)
+			.projection()
+			.limit()
+			.skip();
+
+		const fish = await customFind.query;
+
+		res.status(200).json({ length: fish.length, fish });
 	} catch (err) {
 		next(err);
 	}
-}
+};
 
 export default {
 	addFish,
+	getFish,
 	removeFish,
 };

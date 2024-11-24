@@ -8,6 +8,6 @@ const router = express.Router();
 
 router.post('/', authenticate, upload.single('image'), fishController.addFish);
 router.delete('/:fid', authenticate, fishController.removeFish);
-
+router.get('/', fishController.getFish);
 
 export default router;
