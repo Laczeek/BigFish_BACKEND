@@ -6,6 +6,7 @@ import cookieParser from 'cookie-parser';
 import userRouter from './routers/user-router';
 import authRouter from './routers/auth-router';
 import fishRouter from './routers/fish-router';
+import reportRouter from './routers/report-router';
 
 import notFoundMiddleware from './middlewares/notfound';
 import errorMiddleware from './middlewares/error';
@@ -22,6 +23,7 @@ app.use(express.json());
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/fish', fishRouter);
+app.use('/api/reports', reportRouter);
 
 app.all('*', notFoundMiddleware);
 

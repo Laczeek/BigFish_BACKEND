@@ -6,7 +6,7 @@ declare module 'express' {
         user?: {
             _id: string;
             nickname: string;
-            role: string;
+            role: 'admin' | 'moderator'| 'user';
         };
     }
 }
