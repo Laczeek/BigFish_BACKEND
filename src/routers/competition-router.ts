@@ -8,4 +8,9 @@ const router = express.Router();
 router.use(authenticate);
 router.post('/', competitionController.createCompetition);
 
+router.get('/invites', competitionController.getMyInvites);
+router.post('/:cid/invite/:uid', competitionController.inviteUserToCompetition);
+router.patch('/:cid/accept', competitionController.acceptInvite);
+router.delete('/:cid/remove/:uid', competitionController.removeUserFromCompetition);
+
 export default router;
