@@ -83,4 +83,29 @@ const fishSchema = new Schema<IFish>({
 	},
 });
 
+fishSchema.pre('save', function (next) {
+	if (this.isNew) {
+		let calculatedValue;
+		let unit: 'kg' | 'cm';
+
+		if (this.measurement.type === 'weight') {
+			calculatedValue =
+				this.measurement.unit === 'kg'
+					? this.measurement.value
+					: this.measurement.value * 0.45359237;
+			unit = 'kg';
+		} else {
+			calculatedValue =
+				this.measurement.unit === 'cm'
+					? this.measurement.value
+					: this.measurement.value * 2.54;
+			unit = 'cm';
+		}
+
+		this.measurement.value = calculatedValue;
+		this.measurement.unit = unit;
+	}
+	next();
+});
+
 export default model<IFish>('Fish', fishSchema);
