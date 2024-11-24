@@ -136,7 +136,7 @@ const observeUser = async (req: Request, res: Response, next: NextFunction) => {
 	let session: ClientSession | null = null;
 	try {
 		if (uid === req.user!._id)
-			throw new AppError('You cannot observe your self.', 400);
+			throw new AppError('You cannot observe your self.', 409);
 
 		let authenticatedUser = await User.findById(req.user!._id);
 		if (!authenticatedUser)
@@ -195,7 +195,9 @@ const deleteAccount = async (
 		session = await startSession();
 		session.startTransaction();
 
-		const deletedUser = await User.findByIdAndDelete(req.user!._id, {session});
+		const deletedUser = await User.findByIdAndDelete(req.user!._id, {
+			session,
+		});
 		if (!deletedUser)
 			throw new AppError(
 				'Something went wrong. Cannot delete your account.',
@@ -204,14 +206,14 @@ const deleteAccount = async (
 
 		const fishes = await Fish.find({ user: deletedUser.id });
 
-		await Fish.deleteMany({ user: deletedUser.id }, {session});
+		await Fish.deleteMany({ user: deletedUser.id }, { session });
 
 		await session.commitTransaction();
 
 		cloudinaryDestroy(deletedUser.avatar.public_id);
 		fishes.forEach((fish) => cloudinaryDestroy(fish.image.public_id));
 
-		res.status(204).send();
+		res.status(200).json({ msg: 'Account successfully deleted.' });
 	} catch (err) {
 		if (session) {
 			await session.abortTransaction();
@@ -239,10 +241,10 @@ const banUserAndDeleteAccount = async (
 
 		const deletedUser = await User.findByIdAndDelete(uid, { session });
 		if (!deletedUser)
-			throw new AppError('User with provided id does not exist.', 400);
+			throw new AppError('User with provided id does not exist.', 404);
 
 		const fishes = await Fish.find({ user: deletedUser.id });
-		await Fish.deleteMany({ user: deletedUser.id }, {session});
+		await Fish.deleteMany({ user: deletedUser.id }, { session });
 
 		const ban = new Ban({ email: deletedUser.email, reason });
 		await ban.save({ session });
@@ -251,7 +253,7 @@ const banUserAndDeleteAccount = async (
 		fishes.forEach((fish) => cloudinaryDestroy(fish.image.public_id));
 
 		await session.commitTransaction();
-		res.status(204).send();
+		res.status(200).json({ msg: 'User successfully banned.' });
 	} catch (err) {
 		if (session) {
 			await session.abortTransaction();
@@ -272,5 +274,5 @@ export default {
 	searchUsersByNickname,
 	observeUser,
 	deleteAccount,
-	banUserAndDeleteAccount
+	banUserAndDeleteAccount,
 };

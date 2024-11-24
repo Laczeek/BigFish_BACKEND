@@ -151,7 +151,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 
 		res.clearCookie('refreshToken', getCookieConfigObject(undefined, true));
 
-		res.status(200).send();
+		res.status(200).json({msg: 'Successfully logged out.'});
 	} catch (err) {
 		next(err);
 	}

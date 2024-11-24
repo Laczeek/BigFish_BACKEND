@@ -18,7 +18,8 @@ const reportUser = async (req: Request, res: Response, next: NextFunction) => {
 			'reasons.reporter': req.user!._id,
 		});
 
-        if(isAlreadyReported) throw new AppError('You have already reported this user.', 400);
+		if (isAlreadyReported)
+			throw new AppError('You have already reported this user.', 409);
 
 		await Report.updateOne(
 			{ reportedUser: reportedUserId },
@@ -26,26 +27,30 @@ const reportUser = async (req: Request, res: Response, next: NextFunction) => {
 			{ runValidators: true, upsert: true }
 		);
 
-		res.status(204).send();
+		res.status(200).json({ msg: 'User successfully reported.' });
 	} catch (err) {
 		next(err);
 	}
 };
 
-const getReport = async(req: Request, res: Response, next: NextFunction) => {
-    const reportId = req.params.rid;
-    try {
-        const report = await Report.findById(reportId).populate('reportedUser');
+const getReport = async (req: Request, res: Response, next: NextFunction) => {
+	const reportId = req.params.rid;
+	try {
+		const report = await Report.findById(reportId).populate('reportedUser');
 
-        if(!report) throw new AppError('It was not possible to find a report of the given id.', 400)
+		if (!report)
+			throw new AppError(
+				'It was not possible to find a report of the given id.',
+				404
+			);
 
-        res.status(200).json({report})
-    } catch (err) {
-        next(err);
-    }
-}
+		res.status(200).json({ report });
+	} catch (err) {
+		next(err);
+	}
+};
 
 export default {
 	reportUser,
-    getReport
+	getReport,
 };

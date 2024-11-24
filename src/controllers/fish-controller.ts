@@ -115,7 +115,7 @@ const removeFish = async (req: Request, res: Response, next: NextFunction) => {
 
 		const deletedFish = await Fish.findByIdAndDelete(fid, { session });
 		if (!deletedFish)
-			throw new AppError('Fish for provided id does not exist.', 400);
+			throw new AppError('Fish for provided id does not exist.', 404);
 
 		cloudinaryDestroy(deletedFish.image.public_id);
 
@@ -127,7 +127,7 @@ const removeFish = async (req: Request, res: Response, next: NextFunction) => {
 
 		await session.commitTransaction();
 
-		res.status(204).send();
+		res.status(200).json({msg: 'Fish successfully removed.'});
 	} catch (err) {
 		if (session) {
 			await session.abortTransaction();
