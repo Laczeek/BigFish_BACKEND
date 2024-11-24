@@ -10,11 +10,19 @@ import {
 	verifyJWT,
 } from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
+import Ban from '../models/Ban';
 
 const signup = async (req: Request, res: Response, next: NextFunction) => {
 	const { nickname, email, password, passwordConfirm } = req.body;
 
 	try {
+		const bannedUser = await Ban.findOne({ email });
+		if (bannedUser)
+			throw new AppError(
+				`You have been banned. The reason is: ${bannedUser.reason}`,
+				401
+			);
+
 		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
 		const userCountry = geoip.lookup(uip)?.country;
 		if (!userCountry)

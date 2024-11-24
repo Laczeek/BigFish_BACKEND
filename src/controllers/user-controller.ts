@@ -8,6 +8,7 @@ import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
 import { IUser } from '../interfaces/user';
 import { cloudinaryUpload, cloudinaryDestroy } from '../utils/cloudinaryUpload';
+import Ban from '../models/Ban';
 
 const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 	const uid = req.user!._id;
@@ -194,7 +195,7 @@ const deleteAccount = async (
 		session = await startSession();
 		session.startTransaction();
 
-		const deletedUser = await User.findByIdAndDelete(req.user!._id);
+		const deletedUser = await User.findByIdAndDelete(req.user!._id, {session});
 		if (!deletedUser)
 			throw new AppError(
 				'Something went wrong. Cannot delete your account.',
@@ -203,13 +204,53 @@ const deleteAccount = async (
 
 		const fishes = await Fish.find({ user: deletedUser.id });
 
-		await Fish.deleteMany({ user: deletedUser.id }, {});
+		await Fish.deleteMany({ user: deletedUser.id }, {session});
 
 		await session.commitTransaction();
 
 		cloudinaryDestroy(deletedUser.avatar.public_id);
 		fishes.forEach((fish) => cloudinaryDestroy(fish.image.public_id));
 
+		res.status(204).send();
+	} catch (err) {
+		if (session) {
+			await session.abortTransaction();
+		}
+		next(err);
+	} finally {
+		if (session) {
+			await session.endSession();
+		}
+	}
+};
+
+const banUserAndDeleteAccount = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	let session: ClientSession | null = null;
+	const uid = req.params.uid;
+	const { reason } = req.body;
+
+	try {
+		session = await startSession();
+		session.startTransaction();
+
+		const deletedUser = await User.findByIdAndDelete(uid, { session });
+		if (!deletedUser)
+			throw new AppError('User with provided id does not exist.', 400);
+
+		const fishes = await Fish.find({ user: deletedUser.id });
+		await Fish.deleteMany({ user: deletedUser.id }, {session});
+
+		const ban = new Ban({ email: deletedUser.email, reason });
+		await ban.save({ session });
+
+		cloudinaryDestroy(deletedUser.avatar.public_id);
+		fishes.forEach((fish) => cloudinaryDestroy(fish.image.public_id));
+
+		await session.commitTransaction();
 		res.status(204).send();
 	} catch (err) {
 		if (session) {
@@ -230,5 +271,6 @@ export default {
 	getUsers,
 	searchUsersByNickname,
 	observeUser,
-	deleteAccount
+	deleteAccount,
+	banUserAndDeleteAccount
 };
