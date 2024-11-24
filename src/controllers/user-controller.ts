@@ -3,6 +3,7 @@ import { ClientSession, ObjectId, startSession } from 'mongoose';
 import { UploadApiResponse } from 'cloudinary';
 
 import User from '../models/User';
+import Fish from '../models/Fish';
 import AppError from '../utils/AppError';
 import CustomFind from '../utils/CustomFind';
 import { IUser } from '../interfaces/user';
@@ -183,6 +184,45 @@ const observeUser = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
+const deleteAccount = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	let session: ClientSession | null = null;
+	try {
+		session = await startSession();
+		session.startTransaction();
+
+		const deletedUser = await User.findByIdAndDelete(req.user!._id);
+		if (!deletedUser)
+			throw new AppError(
+				'Something went wrong. Cannot delete your account.',
+				500
+			);
+
+		const fishes = await Fish.find({ user: deletedUser.id });
+
+		await Fish.deleteMany({ user: deletedUser.id }, {});
+
+		await session.commitTransaction();
+
+		cloudinaryDestroy(deletedUser.avatar.public_id);
+		fishes.forEach((fish) => cloudinaryDestroy(fish.image.public_id));
+
+		res.status(204).send();
+	} catch (err) {
+		if (session) {
+			await session.abortTransaction();
+		}
+		next(err);
+	} finally {
+		if (session) {
+			await session.endSession();
+		}
+	}
+};
+
 export default {
 	getUserById,
 	updateMe,
@@ -190,4 +230,5 @@ export default {
 	getUsers,
 	searchUsersByNickname,
 	observeUser,
+	deleteAccount
 };

@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import geoip from 'geoip-country';
-
 import User from '../models/User';
 import BlacklistedToken from '../models/BlacklistedToken';
 import AppError from '../utils/AppError';
@@ -12,11 +11,7 @@ import {
 } from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
 
-const signup = async (
-	req: Request,
-	res: Response,
-	next: NextFunction
-) => {
+const signup = async (req: Request, res: Response, next: NextFunction) => {
 	const { nickname, email, password, passwordConfirm } = req.body;
 
 	try {
