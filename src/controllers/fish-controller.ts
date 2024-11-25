@@ -33,6 +33,9 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 				'place'
 			);
 
+		if (new Date(whenCaught) > new Date())
+			throw new AppError('Please give the correct date when the fish was caught.', 400, 'whenCaught');
+
 		const measurement = {
 			type: measurementType,
 			unit: measurementUnit,
@@ -127,7 +130,7 @@ const removeFish = async (req: Request, res: Response, next: NextFunction) => {
 
 		await session.commitTransaction();
 
-		res.status(200).json({msg: 'Fish successfully removed.'});
+		res.status(200).json({ msg: 'Fish successfully removed.' });
 	} catch (err) {
 		if (session) {
 			await session.abortTransaction();

@@ -5,7 +5,6 @@ import Competition from '../models/Competition';
 import AppError from '../utils/AppError';
 import User from '../models/User';
 import Fish from '../models/Fish';
-import { ICompetition } from '../interfaces/competition';
 
 const createCompetition = async (
 	req: Request,
