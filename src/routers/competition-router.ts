@@ -7,10 +7,14 @@ const router = express.Router();
 
 router.use(authenticate);
 router.post('/', competitionController.createCompetition);
-
+router.get('/', competitionController.getCompetition);
+router.delete('/', competitionController.deleteCompetition);
 router.get('/invites', competitionController.getMyInvites);
-router.post('/:cid/invite/:uid', competitionController.inviteUserToCompetition);
+router.patch('/start', competitionController.startCompetition);
+router.post('/invite/:uid', competitionController.inviteUserToCompetition);
 router.patch('/:cid/accept', competitionController.acceptInvite);
-router.delete('/:cid/remove/:uid', competitionController.removeUserFromCompetition);
+router.delete('/quit', competitionController.quitCompetition);
+router.delete('/remove/:uid', competitionController.removeUserFromCompetition);
+router.delete('/save', competitionController.saveCompetitionResult);
 
 export default router;
