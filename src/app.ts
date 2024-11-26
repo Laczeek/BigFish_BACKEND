@@ -1,5 +1,6 @@
 import express from 'express';
 import mongoose from 'mongoose';
+import cors from 'cors';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
@@ -17,8 +18,13 @@ import errorMiddleware from './middlewares/error';
 const PORT = process.env.PORT || 8080;
 const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
-const app = express();
+const corsConfig = {
+	origin: process.env.NODE_ENV === 'DEVELOPMENT'? 'http://localhost:3000' : 'XYZ',
+	credentials: true
+};
 
+const app = express();
+app.use(cors(corsConfig))
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
