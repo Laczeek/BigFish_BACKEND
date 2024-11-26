@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ClientSession, ObjectId, startSession } from 'mongoose';
 import { UploadApiResponse } from 'cloudinary';
+import xss from 'xss';
 
 import User from '../models/User';
 import Fish from '../models/Fish';
@@ -20,6 +21,9 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 	Object.keys(body).forEach((key) => {
 		if (!allowedFields.includes(key)) {
 			delete body[key];
+		}
+		if(key === 'nickname' || key === 'description') {
+			body[key] = xss(body[key]);
 		}
 	});
 

@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import xss from 'xss';
 
 import Report from '../models/Report';
 import AppError from '../utils/AppError';
@@ -8,9 +9,11 @@ const reportUser = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		const { description } = req.body;
 
+		const sanitizedDescription = xss(description);
+
 		const reason = {
 			reporter: req.user!._id,
-			description,
+			description: sanitizedDescription,
 		};
 
 		const isAlreadyReported = await Report.findOne({
@@ -27,7 +30,7 @@ const reportUser = async (req: Request, res: Response, next: NextFunction) => {
 			{ runValidators: true, upsert: true }
 		);
 
-		res.status(200).json({ msg: 'User successfully reported.' });
+		res.status(201).json({ msg: 'User successfully reported.' });
 	} catch (err) {
 		next(err);
 	}

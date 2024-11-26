@@ -1,6 +1,8 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
 import geoip from 'geoip-country';
+import xss from 'xss';
+
 import User from '../models/User';
 import BlacklistedToken from '../models/BlacklistedToken';
 import AppError from '../utils/AppError';
@@ -15,12 +17,14 @@ import Ban from '../models/Ban';
 const signup = async (req: Request, res: Response, next: NextFunction) => {
 	const { nickname, email, password, passwordConfirm } = req.body;
 
+	const sanitizedNickname = xss(nickname);
+
 	try {
 		const bannedUser = await Ban.findOne({ email });
 		if (bannedUser)
 			throw new AppError(
 				`You have been banned. The reason is: ${bannedUser.reason}`,
-				401
+				403
 			);
 
 		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
@@ -32,7 +36,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 			);
 
 		const newUser = new User({
-			nickname,
+			nickname: sanitizedNickname,
 			email,
 			password,
 			passwordConfirm,

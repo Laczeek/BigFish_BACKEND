@@ -2,9 +2,11 @@ import express from 'express';
 
 import authenticate from '../middlewares/authenticate';
 import competitionController from '../controllers/competition-controller';
+import { generalRateLimiter } from '../utils/rate-limiters';
 
 const router = express.Router();
 
+router.use(generalRateLimiter);
 router.use(authenticate);
 router.post('/', competitionController.createCompetition);
 router.get('/', competitionController.getCompetition);

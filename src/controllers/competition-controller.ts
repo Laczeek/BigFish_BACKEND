@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { ClientSession, ObjectId, PopulatedDoc, startSession } from 'mongoose';
+import { ClientSession, ObjectId, startSession } from 'mongoose';
+import xss from 'xss';
 
 import Competition from '../models/Competition';
 import AppError from '../utils/AppError';
@@ -31,8 +32,10 @@ const createCompetition = async (
 		session = await startSession();
 		session.startTransaction();
 
+		const sanitizedName = xss(name);
+
 		const newCompetition = new Competition({
-			name,
+			name: sanitizedName,
 			creator: user.id,
 			endDate,
 			measurementType,

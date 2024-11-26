@@ -1,7 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan';
+import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import mongoSanitize from 'express-mongo-sanitize';
 
 import userRouter from './routers/user-router';
 import authRouter from './routers/auth-router';
@@ -17,9 +19,11 @@ const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
 const app = express();
 
+app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());
 app.use(express.json());
+app.use(mongoSanitize());
 
 app.use('/api/users', userRouter);
 app.use('/api/auth', authRouter);

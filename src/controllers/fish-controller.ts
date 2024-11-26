@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { ClientSession, startSession } from 'mongoose';
 import { UploadApiResponse } from 'cloudinary';
+import xss from 'xss';
 
 import Fish from '../models/Fish';
 import User from '../models/User';
@@ -68,12 +69,15 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 			public_id: clouadinaryResult?.public_id,
 		};
 
+		const sanitizedName = xss(name);
+		const sanitizedDescription = xss(description);
+
 		session = await startSession();
 		session.startTransaction();
 
 		const newFish = new Fish({
-			name,
-			description,
+			name: sanitizedName,
+			description: sanitizedDescription,
 			whenCaught,
 			measurement,
 			location,
