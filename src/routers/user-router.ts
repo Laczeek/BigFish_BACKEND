@@ -27,7 +27,7 @@ router.delete(
 );
 router.get('/observe/:uid', authenticate, userController.observeUser);
 
-router.get('/search/:nickname', userController.searchUsersByNickname);
+router.get('/search', userController.searchUsersByNickname);
 router.get('/:uid', userController.getUserById);
 
 export default router;

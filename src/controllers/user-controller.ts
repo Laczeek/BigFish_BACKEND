@@ -22,7 +22,7 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 		if (!allowedFields.includes(key)) {
 			delete body[key];
 		}
-		if(key === 'nickname' || key === 'description') {
+		if (key === 'nickname' || key === 'description') {
 			body[key] = xss(body[key]);
 		}
 	});
@@ -91,12 +91,11 @@ const getUserById = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const getUsers = async (req: Request, res: Response, next: NextFunction) => {
-	const allowedQueryFields = [
-		'country',
-		'hooksAmount',
-		'fishAmount',
-		'nickname',
-	];
+	const allowedQueryFields = ['country.name'];
+
+	if (req.query.country) {
+		req.query['country.name'] = req.query.country;
+	}
 	try {
 		const customFind = new CustomFind<IUser>(
 			User,
@@ -108,9 +107,12 @@ const getUsers = async (req: Request, res: Response, next: NextFunction) => {
 			.limit()
 			.skip();
 
+		const totalCount = await User.countDocuments(
+			customFind.serializedQuery
+		);
 		const users = await customFind.query;
 
-		res.json({ length: users.length, users });
+		res.json({ length: users.length, users, totalCount });
 	} catch (err) {
 		next(err);
 	}
@@ -121,13 +123,21 @@ const searchUsersByNickname = async (
 	res: Response,
 	next: NextFunction
 ) => {
-	const nickname = req.params.nickname;
+	const nickname = req.query.nickname as string;
 	try {
+		if (!nickname)
+			throw new AppError('This endpoint allow only nickname query.', 403);
+		if (Array.isArray(nickname))
+			throw new AppError('Only single query is allowed.', 403);
+
 		const users = await User.find({
-			nickname: { $regex: nickname, $options: 'i' },
+			nickname: {
+				$regex: nickname.replace(/[-[\]{}()*+?.,\\/^$|#\s]/g, '\\$&'),
+				$options: 'i',
+			},
 		})
-			.select('nickname avatarURL competition')
-			.limit(10);
+			.select('nickname avatar competition')
+			.limit(5);
 
 		res.status(200).json({ users, length: users.length });
 	} catch (err) {

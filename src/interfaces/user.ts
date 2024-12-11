@@ -22,12 +22,15 @@ export interface IUser {
 		url: string;
 		public_id: string;
 	};
-	country: string;
+	country: {
+		name: string;
+		coordinates: [number, number];
+	};
 	role: 'admin' | 'moderator' | 'user';
 	fishAmount: number;
 	myHooks: ObjectId[];
-    hooksAmount: number;
-    competition: ObjectId;
-    competitionWins: number;
-    createdAt: Date;
+	hooksAmount: number;
+	competition: ObjectId;
+	competitionWins: number;
+	createdAt: Date;
 }

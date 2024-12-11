@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import geoip from 'geoip-country';
+import geoip from 'geoip-lite'
 import xss from 'xss';
 
 import User from '../models/User';
@@ -10,6 +10,7 @@ import {
 	signJWT,
 	REFRESH_TOKEN_LIFESPAN,
 	verifyJWT,
+	TDecodedToken,
 } from '../utils/jwt-promisified';
 import getCookieConfigObject from '../utils/getCookieConfigObject';
 import Ban from '../models/Ban';
@@ -28,8 +29,9 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 			);
 
 		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
-		const userCountry = geoip.lookup(uip)?.country;
-		if (!userCountry)
+		const geo = geoip.lookup(uip);
+
+		if (!geo)
 			throw new AppError(
 				'Failed to get your country. Report the problem to the administration.',
 				500
@@ -40,7 +42,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 			email,
 			password,
 			passwordConfirm,
-			country: userCountry,
+			country: {name: geo.country, coordinates: [geo.ll[1], geo.ll[0]]},
 		});
 
 		await newUser.save({ j: true, w: 2 });
@@ -115,7 +117,7 @@ const refreshToken = async (
 	try {
 		if (!cookieRefreshToken)
 			throw new AppError(
-				'Refresh token is missing. Please log in again.',
+				'Refresh token is missing.',
 				401
 			);
 
@@ -125,7 +127,17 @@ const refreshToken = async (
 		if (isTokenInBlacklist)
 			throw new AppError("You can't get a new access token.", 401);
 
-		const decodedToken = await verifyJWT(cookieRefreshToken, 'refresh');
+		let decodedToken:TDecodedToken;
+
+		try {
+			decodedToken = await verifyJWT(cookieRefreshToken, 'refresh');
+		} catch (err:unknown) {
+			if(err) {
+				res.clearCookie('refreshToken', getCookieConfigObject(undefined, true));
+			}
+			throw err;
+		}
+		
 
 		const user = await User.findById(decodedToken._id);
 		if (!user)
@@ -139,7 +151,7 @@ const refreshToken = async (
 			'access'
 		);
 
-		res.status(200).json({ accessToken });
+		res.status(200).json({ accessToken, user });
 	} catch (err) {
 		next(err);
 	}

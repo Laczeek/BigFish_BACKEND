@@ -8,6 +8,7 @@ import { generalRateLimiter, uploadRateLimiter } from '../utils/rate-limiters';
 const router = express.Router();
 
 router.get('/', generalRateLimiter, fishController.getFish);
+router.get('/:uid', generalRateLimiter, fishController.getUsersFish);
 
 router.use(authenticate);
 router.post(
@@ -16,6 +17,8 @@ router.post(
 	upload.single('image'),
 	fishController.addFish
 );
+
+
 router.delete('/:fid', generalRateLimiter, fishController.removeFish);
 
 export default router;

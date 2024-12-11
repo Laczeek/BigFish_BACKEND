@@ -9,6 +9,7 @@ import AppError from '../utils/AppError';
 import { cloudinaryDestroy, cloudinaryUpload } from '../utils/cloudinaryUpload';
 import CustomFind from '../utils/CustomFind';
 import { IFish } from '../interfaces/fish';
+import normalizeDate from '../utils/normalizeDate';
 
 const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	const {
@@ -18,7 +19,7 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		measurementType,
 		measurementUnit,
 		measurementValue,
-		place,
+		address,
 	} = req.body;
 
 	let clouadinaryResult: undefined | null | UploadApiResponse = null;
@@ -27,15 +28,22 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	try {
 		if (!req.file)
 			throw new AppError('Please provide an image.', 400, 'image');
-		if (!place)
+		if (!address)
 			throw new AppError(
-				'Please provide the place where the fish was caught.',
+				'Please provide the address where the fish was caught.',
 				400,
-				'place'
+				'address'
 			);
 
-		if (new Date(whenCaught) > new Date())
-			throw new AppError('Please give the correct date when the fish was caught.', 400, 'whenCaught');
+		const normalizedToday = normalizeDate(new Date());
+		const normalizedWhenCaught = normalizeDate(new Date(whenCaught));
+
+		if (normalizedWhenCaught.getTime() > normalizedToday.getTime())
+			throw new AppError(
+				'Please give the correct date when the fish was caught.',
+				400,
+				'whenCaught'
+			);
 
 		const measurement = {
 			type: measurementType,
@@ -44,7 +52,7 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		};
 
 		const geoResponse = await fetch(
-			`https://api.geoapify.com/v1/geocode/search?text=${place}&format=json&apiKey=${process.env.GEOAPIFY_KEY}`
+			`https://api.geoapify.com/v1/geocode/search?text=${address}&format=json&apiKey=${process.env.GEOAPIFY_KEY}`
 		);
 
 		const resData = await geoResponse.json();
@@ -188,8 +196,29 @@ const getFish = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
+const getUsersFish = async (req: Request, res: Response, next: NextFunction) => {
+	try {
+		const filter = {
+			user: req.params.uid
+		}
+
+		const customFind = new CustomFind(Fish, req.query, [], filter)
+			.sort()
+			.limit()
+			.skip();
+
+		const totalCount = await Fish.countDocuments(filter);
+		const fish = await customFind.query;
+
+		res.status(200).json({ totalCount, length: fish.length, fish });
+	} catch (err) {
+		next(err);
+	}
+};
+
 export default {
 	addFish,
 	getFish,
 	removeFish,
+	getUsersFish,
 };

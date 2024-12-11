@@ -20,9 +20,9 @@ export const cloudinaryUpload = async (
 				folder: folderName,
 				format: 'webp',
 				transformation: {
-					width: 500,
-					height: 500,
-					crop: 'pad',
+					width: undefined,
+					height: undefined,
+					crop: 'thumb',
 					quality: 'auto',
 				},
 			},

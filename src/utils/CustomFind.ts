@@ -7,6 +7,7 @@ type UnknownOject = { [key: string]: any };
 class CustomFind<T> {
 	query: Query<any, T>;
 	private queryObj: UnknownOject;
+	serializedQuery: { [x: string]: any } = {};
 
 	constructor(
 		model: Model<any>,
@@ -17,7 +18,7 @@ class CustomFind<T> {
 		this.queryObj = { ...reqQuery };
 		const serializedQuery = serializeQuery(reqQuery, allowedFields);
 		this.query = model.find({ ...serializedQuery, ...filter });
-		console.log(serializedQuery);
+		this.serializedQuery = serializedQuery;
 	}
 
 	projection() {
@@ -31,7 +32,8 @@ class CustomFind<T> {
 
 	sort() {
 		if (this.queryObj.sort) {
-			this.query.sort(this.queryObj.sort);
+			const sortingString = this.queryObj.sort.replace(/,/g, ' ');
+			this.query.sort(sortingString);
 		}
 		return this;
 	}

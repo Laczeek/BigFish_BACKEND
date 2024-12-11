@@ -86,9 +86,23 @@ const userSchema = new Schema<IUser>({
 		_id: false,
 	},
 	country: {
-		type: String,
-		required: true,
+		name: {
+			type: String,
+			required: [true, 'The country must have a name.'],
+		},
+		coordinates: {
+			type: [Number],
+			validate: {
+				validator: function (val) {
+					return val.length === 2;
+				},
+				message:
+					'Coordinates must be an array of two numbers [longitude, latitude].',
+			},
+			required: [true, 'Coordinates of your country are required.'],
+		},
 	},
+
 	role: {
 		type: String,
 		enum: {

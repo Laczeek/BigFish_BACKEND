@@ -2,7 +2,7 @@ import { rateLimit } from 'express-rate-limit';
 
 export const generalRateLimiter = rateLimit({
 	windowMs: 1000 * 60 * 60, // 1 HOUR
-	limit: 10,
+	limit: 500,
 	message: {
 		error: 'You have exceeded your rate limit. Please try again later.',
 	},
