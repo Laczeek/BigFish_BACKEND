@@ -196,11 +196,15 @@ const getFish = async (req: Request, res: Response, next: NextFunction) => {
 	}
 };
 
-const getUsersFish = async (req: Request, res: Response, next: NextFunction) => {
+const getUsersFish = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
 	try {
 		const filter = {
-			user: req.params.uid
-		}
+			user: req.params.uid,
+		};
 
 		const customFind = new CustomFind(Fish, req.query, [], filter)
 			.sort()
@@ -216,9 +220,34 @@ const getUsersFish = async (req: Request, res: Response, next: NextFunction) => 
 	}
 };
 
+const getLatestFishesOfObservedUsers = async (
+	req: Request,
+	res: Response,
+	next: NextFunction
+) => {
+	try {
+		const user = await User.findById(req.user!._id).select('myHooks');
+		if (!user) throw new AppError('Something went wrong.', 500);
+		const latestFishes = await Fish.find({
+			user: { $in: user.myHooks },
+			whenCaught: normalizeDate(new Date()),
+		})
+			.limit(20)
+			.populate('user', 'nickname avatar');
+
+		res.status(200).json({
+			length: latestFishes.length,
+			fish: latestFishes,
+		});
+	} catch (err) {
+		next(err);
+	}
+};
+
 export default {
 	addFish,
 	getFish,
 	removeFish,
 	getUsersFish,
+	getLatestFishesOfObservedUsers,
 };
