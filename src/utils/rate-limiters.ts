@@ -10,7 +10,7 @@ export const generalRateLimiter = rateLimit({
 
 export const uploadRateLimiter = rateLimit({
 	windowMs: 1000 * 60 * 60, // 1 HOUR
-	limit: 20,
+	limit: 30,
 	message: {
 		error: 'You have exceeded the upload limit. Please try again later.',
 	},
@@ -18,7 +18,7 @@ export const uploadRateLimiter = rateLimit({
 
 export const loginRateLimiter = rateLimit({
 	windowMs: 1000 * 60 * 60, // 1 HOUR
-	limit: 10,
+	limit: 15,
 	message: {
 		error: 'You have exceeded the limit of login attempts. Please try again later.',
 	},

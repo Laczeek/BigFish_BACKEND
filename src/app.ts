@@ -19,12 +19,16 @@ const PORT = process.env.PORT || 8080;
 const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
 const corsConfig = {
-	origin: process.env.NODE_ENV === 'DEVELOPMENT'? 'http://localhost:3000' : 'XYZ',
-	credentials: true
+	origin:
+		process.env.NODE_ENV === 'DEVELOPMENT'
+			? 'http://localhost:3000'
+			: 'XYZ',
+	credentials: true,
 };
 
 const app = express();
-app.use(cors(corsConfig))
+app.set('trust proxy', true);
+app.use(cors(corsConfig));
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(cookieParser());

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import bcrypt from 'bcrypt';
-import geoip from 'geoip-lite'
+import geoip from 'geoip-lite';
 import xss from 'xss';
 
 import User from '../models/User';
@@ -28,7 +28,14 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 				403
 			);
 
-		const uip = '103.203.87.255'; //TODO - CHANGE THIS IN FUTURE TO REQ.IP
+		const uip = req.ip;
+
+		if (!uip)
+			throw new AppError(
+				'Failed to get your country. Report the problem to the administration.',
+				500
+			);
+
 		const geo = geoip.lookup(uip);
 
 		if (!geo)
@@ -42,7 +49,7 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 			email,
 			password,
 			passwordConfirm,
-			country: {name: geo.country, coordinates: [geo.ll[1], geo.ll[0]]},
+			country: { name: geo.country, coordinates: [geo.ll[1], geo.ll[0]] },
 		});
 
 		await newUser.save({ j: true, w: 2 });
@@ -116,10 +123,7 @@ const refreshToken = async (
 	const cookieRefreshToken = req.cookies.refreshToken;
 	try {
 		if (!cookieRefreshToken)
-			throw new AppError(
-				'Refresh token is missing.',
-				401
-			);
+			throw new AppError('Refresh token is missing.', 401);
 
 		const isTokenInBlacklist = await BlacklistedToken.findOne({
 			token: cookieRefreshToken,
@@ -127,17 +131,19 @@ const refreshToken = async (
 		if (isTokenInBlacklist)
 			throw new AppError("You can't get a new access token.", 401);
 
-		let decodedToken:TDecodedToken;
+		let decodedToken: TDecodedToken;
 
 		try {
 			decodedToken = await verifyJWT(cookieRefreshToken, 'refresh');
-		} catch (err:unknown) {
-			if(err) {
-				res.clearCookie('refreshToken', getCookieConfigObject(undefined, true));
+		} catch (err: unknown) {
+			if (err) {
+				res.clearCookie(
+					'refreshToken',
+					getCookieConfigObject(undefined, true)
+				);
 			}
 			throw err;
 		}
-		
 
 		const user = await User.findById(decodedToken._id);
 		if (!user)
@@ -167,7 +173,7 @@ const logout = async (req: Request, res: Response, next: NextFunction) => {
 
 		res.clearCookie('refreshToken', getCookieConfigObject(undefined, true));
 
-		res.status(200).json({msg: 'Successfully logged out.'});
+		res.status(200).json({ msg: 'Successfully logged out.' });
 	} catch (err) {
 		next(err);
 	}
