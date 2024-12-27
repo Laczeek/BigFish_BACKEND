@@ -18,7 +18,7 @@ const getCookieConfigObject = (
 					httpOnly: true,
 					path: '/',
 					secure: true,
-					sameSite: false as const,
+					sameSite: 'none' as const,
 					maxAge: tokenLifespan,
 					...(isClearing ? {} : { maxAge: tokenLifespan }),
 			  };
