@@ -13,9 +13,6 @@ const errorMiddleware = (
 	res: Response,
 	next: NextFunction
 ) => {
-	console.error('Error Occured!');
-	console.error(err.message);
-
 	// MONGOOSE VALIDATION ERRORS
 	if (
 		err instanceof Error.ValidationError &&
