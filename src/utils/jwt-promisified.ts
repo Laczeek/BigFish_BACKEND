@@ -12,7 +12,7 @@ export type TDecodedToken = ITokenPayload & { iat: number; exp: number };
 
 const SECRET_KEY = process.env.SECRET_KEY!;
 export const REFRESH_TOKEN_LIFESPAN = 60 * 60 * 24 * 3;
-export const ACCESS_TOKEN_LIFESPAN = 60;
+export const ACCESS_TOKEN_LIFESPAN = 60 * 15;
 
 export const signJWT = (
 	payload: ITokenPayload,

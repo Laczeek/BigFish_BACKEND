@@ -80,8 +80,8 @@ const userSchema = new Schema<IUser>({
 			public_id: String,
 		},
 		default: {
-			url: 'https://res.cloudinary.com/dy4nafoiy/image/upload/v1731436857/avatars/iwqceqduss8oxa2acpzv.webp',
-			public_id: 'avatars/iwqceqduss8oxa2acpzv',
+			url: 'https://res.cloudinary.com/dy4nafoiy/image/upload/v1734745143/avatars/xkesqylhn9sgaxx1kfbi.webp',
+			public_id: 'avatars/xkesqylhn9sgaxx1kfbi',
 		},
 		_id: false,
 	},

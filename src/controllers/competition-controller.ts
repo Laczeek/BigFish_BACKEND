@@ -28,6 +28,18 @@ const createCompetition = async (
 				"You can't create a new competition because you've already joined one.",
 				409
 			);
+		const nowLocal = new Date();
+		const inputDate = new Date(endDate);
+
+		nowLocal.setHours(0, 0, 0, 0);
+		inputDate.setHours(0, 0, 0, 0);
+
+		if (inputDate.getTime() <= nowLocal.getTime())
+			throw new AppError(
+				'The competition must last at least one day.',
+				400,
+				'endDate'
+			);
 
 		session = await startSession();
 		session.startTransaction();
@@ -177,6 +189,9 @@ const acceptInvite = async (
 
 		await session.commitTransaction();
 		res.status(200).json({
+			competition: {
+				_id: competition.id,
+			},
 			msg: 'You have successfully joined the competition.',
 		});
 	} catch (err) {
@@ -242,7 +257,13 @@ const removeUserFromCompetition = async (
 				403
 			);
 
-		if (new Date() >= competition.endDate)
+		const nowLocal = new Date();
+		const compEndLocal = new Date(competition.endDate);
+
+		nowLocal.setHours(0, 0, 0, 0);
+		compEndLocal.setHours(0, 0, 0, 0);
+
+		if (nowLocal.getTime() >= compEndLocal.getTime())
 			throw new AppError(
 				"You can't delete the user because the competition time is over. Please save the result of the competition.",
 				403
@@ -314,7 +335,13 @@ const quitCompetition = async (
 		if (!competition)
 			throw new AppError('Your competition could not be found.', 404);
 
-		if (new Date() >= competition.endDate)
+		const nowLocal = new Date();
+		const compEndLocal = new Date(competition.endDate);
+
+		nowLocal.setHours(0, 0, 0, 0);
+		compEndLocal.setHours(0, 0, 0, 0);
+
+		if (nowLocal.getTime() >= compEndLocal.getTime())
 			throw new AppError(
 				"You can't quit because the competition time is over. Please save the result of the competition.",
 				403
@@ -394,6 +421,19 @@ const startCompetition = async (
 		if (competition.status === 'started')
 			throw new AppError('This competition has already begun.', 403);
 
+		const nowLocal = new Date();
+		const compEndLocal = new Date(competition.endDate);
+
+		nowLocal.setHours(0, 0, 0, 0);
+		compEndLocal.setHours(0, 0, 0, 0);
+
+		if (nowLocal.getTime() >= compEndLocal.getTime()) {
+			throw new AppError(
+				"You can't start the competition because the time has passed.",
+				403
+			);
+		}
+
 		if (competition.users.length < 3)
 			throw new AppError(
 				'At least 3 users are needed to start the competition.',
@@ -403,13 +443,12 @@ const startCompetition = async (
 		competition.status = 'started';
 		competition.invites = [];
 
-		const today = new Date();
-		const todayWithoutTime = new Date(today.toISOString().split('T')[0]);
-		competition.startDate = todayWithoutTime;
+		competition.startDate = new Date(new Date().setUTCHours(0, 0, 0, 0));
 
 		await competition.save({ validateModifiedOnly: true });
 
 		res.status(200).json({
+			startDate: competition.startDate,
 			msg: 'You have successfully started the competition.',
 		});
 	} catch (err) {
@@ -433,11 +472,19 @@ const deleteCompetition = async (
 				404
 			);
 
-		if (new Date() >= competition.endDate)
-			throw new AppError(
-				"You can't delete the competition because the time is over. Please save the result of the competition.",
-				403
-			);
+		if (competition.status === 'started') {
+			const nowLocal = new Date();
+			const compEndLocal = new Date(competition.endDate);
+
+			nowLocal.setHours(0, 0, 0, 0);
+			compEndLocal.setHours(0, 0, 0, 0);
+
+			if (nowLocal.getTime() >= compEndLocal.getTime())
+				throw new AppError(
+					"You can't delete the competition because the time is over. Please save the result of the competition.",
+					403
+				);
+		}
 
 		session = await startSession();
 		session.startTransaction();
@@ -479,7 +526,7 @@ const getCompetition = async (
 
 		const competition = await Competition.findById(
 			user.competition
-		).populate('users', 'nickname avatar country');
+		).populate('users invites', 'nickname avatar country');
 
 		if (!competition)
 			throw new AppError('Your competition could not be found.', 404);
@@ -492,7 +539,7 @@ const getCompetition = async (
 		const participantsIds: ObjectId[] | [] = competition.users.map(
 			(p: any) => p._id
 		);
-
+		console.log(competition.users);
 		const fishStats = await Fish.aggregate([
 			{
 				$match: {
@@ -520,6 +567,7 @@ const getCompetition = async (
 				},
 			},
 		]);
+		console.log(fishStats);
 
 		const participantsObject: Record<string, any> = {};
 		fishStats.forEach(
@@ -567,7 +615,13 @@ const saveCompetitionResult = async (
 		if (competition.status === 'awaiting')
 			throw new AppError("Your competition hasn't even started.", 403);
 
-		if (new Date() < competition.endDate)
+		const nowLocal = new Date();
+		const compEndLocal = new Date(competition.endDate);
+
+		nowLocal.setHours(0, 0, 0, 0);
+		compEndLocal.setHours(0, 0, 0, 0);
+
+		if (compEndLocal.getTime() > nowLocal.getTime())
 			throw new AppError('The competition time is not over yet.', 403);
 
 		const fishStats = await Fish.aggregate([
@@ -629,6 +683,7 @@ const saveCompetitionResult = async (
 
 		await session.commitTransaction();
 		res.status(200).json({
+			competitionWins: user.competitionWins,
 			msg: 'Successfully approved the outcome of the competition.',
 		});
 	} catch (err) {

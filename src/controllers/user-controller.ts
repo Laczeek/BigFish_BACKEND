@@ -44,7 +44,6 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 				public_id: cloudinaryResult!.public_id,
 			};
 		}
-
 		user.set(body);
 		const updatedUser = await user.save({ validateModifiedOnly: true });
 
@@ -136,7 +135,7 @@ const searchUsersByNickname = async (
 				$options: 'i',
 			},
 		})
-			.select('nickname avatar competition')
+			.select('nickname avatar competition country')
 			.limit(5);
 
 		res.status(200).json({ users, length: users.length });

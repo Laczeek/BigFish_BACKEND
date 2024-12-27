@@ -9,7 +9,6 @@ import AppError from '../utils/AppError';
 import { cloudinaryDestroy, cloudinaryUpload } from '../utils/cloudinaryUpload';
 import CustomFind from '../utils/CustomFind';
 import { IFish } from '../interfaces/fish';
-import normalizeDate from '../utils/normalizeDate';
 
 const addFish = async (req: Request, res: Response, next: NextFunction) => {
 	const {
@@ -35,10 +34,10 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 				'address'
 			);
 
-		const normalizedToday = normalizeDate(new Date());
-		const normalizedWhenCaught = normalizeDate(new Date(whenCaught));
+		const inputDate = new Date(whenCaught).setHours(0, 0, 0, 0);
+		const today = new Date().setHours(0, 0, 0, 0);
 
-		if (normalizedWhenCaught.getTime() > normalizedToday.getTime())
+		if (inputDate > today)
 			throw new AppError(
 				'Please give the correct date when the fish was caught.',
 				400,
@@ -60,7 +59,8 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		if (!geoData)
 			throw new AppError(
 				'Something went wrong when finding the location.',
-				500
+				500,
+				'address'
 			);
 
 		const location = {
@@ -228,9 +228,13 @@ const getLatestFishesOfObservedUsers = async (
 	try {
 		const user = await User.findById(req.user!._id).select('myHooks');
 		if (!user) throw new AppError('Something went wrong.', 500);
+
+		const nowLocal = new Date();
+		nowLocal.setHours(0, 0, 0, 0);
+
 		const latestFishes = await Fish.find({
 			user: { $in: user.myHooks },
-			whenCaught: normalizeDate(new Date()),
+			whenCaught: { $gt: nowLocal },
 		})
 			.limit(20)
 			.populate('user', 'nickname avatar');

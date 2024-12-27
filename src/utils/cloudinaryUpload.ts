@@ -2,7 +2,7 @@ import { v2 as cloudinary, UploadApiResponse } from 'cloudinary';
 import streamifier from 'streamifier';
 import AppError from './AppError';
 
-const DEFAULT_PUBLIC_ID = 'avatars/iwqceqduss8oxa2acpzv';
+const DEFAULT_PUBLIC_ID = 'avatars/xkesqylhn9sgaxx1kfbi';
 
 cloudinary.config({
 	cloud_name: process.env.CLOUDINARY_NAME!,
