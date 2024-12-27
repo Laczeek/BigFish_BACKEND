@@ -4,7 +4,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc -w & node --env-file=.env --watch dist/app.js",
-    "production": "tsc && node --env-file=.env dist/app.js"
+    "build": "tsc",
+    "production": "node --env-file=.env dist/app.js"
   },
   "author": "Patryk Popiela",
   "license": "ISC",
