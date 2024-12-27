@@ -19,10 +19,7 @@ const PORT = process.env.PORT || 8080;
 const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
 const corsConfig = {
-	origin:
-		process.env.NODE_ENV === 'DEVELOPMENT'
-			? 'http://localhost:3000'
-			: 'XYZ',
+	origin: process.env.ORIGIN || 'http://localhost:3000',
 	credentials: true,
 };
 
