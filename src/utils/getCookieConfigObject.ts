@@ -18,7 +18,7 @@ const getCookieConfigObject = (
 					httpOnly: true,
 					path: '/',
 					secure: true,
-					domain: 'onrender.com',
+					domain: 'https://bigfish-frontend.onrender.com',
 					sameSite: 'none' as const,
 					maxAge: tokenLifespan,
 					...(isClearing ? {} : { maxAge: tokenLifespan }),
