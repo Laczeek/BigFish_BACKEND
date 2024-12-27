@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsc -w & node --env-file=.env --watch dist/app.js",
     "build": "tsc",
-    "start": "node --env-file=.env dist/app.js"
+    "start": "node dist/app.js"
   },
   "author": "Patryk Popiela",
   "license": "ISC",
