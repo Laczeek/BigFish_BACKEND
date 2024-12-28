@@ -40,7 +40,10 @@ const updateMe = async (req: Request, res: Response, next: NextFunction) => {
 			previousImagePublicId = user.avatar.public_id;
 
 			body.avatar = {
-				url: cloudinaryResult!.url,
+				url:
+					process.env.NODE_ENV === 'DEVELOPMENT'
+						? cloudinaryResult!.url
+						: cloudinaryResult!.secure_url,
 				public_id: cloudinaryResult!.public_id,
 			};
 		}
@@ -278,7 +281,6 @@ const banUserAndDeleteAccount = async (
 		}
 	}
 };
-
 
 export default {
 	getUserById,

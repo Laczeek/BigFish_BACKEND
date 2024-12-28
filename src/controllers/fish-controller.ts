@@ -73,7 +73,10 @@ const addFish = async (req: Request, res: Response, next: NextFunction) => {
 		clouadinaryResult = await cloudinaryUpload('fish', req.file.buffer);
 
 		const image = {
-			url: clouadinaryResult?.url,
+			url:
+				process.env.NODE_ENV === 'DEVELOPMENT'
+					? clouadinaryResult?.url
+					: clouadinaryResult?.secure_url,
 			public_id: clouadinaryResult?.public_id,
 		};
 
