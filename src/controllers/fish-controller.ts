@@ -237,7 +237,7 @@ const getLatestFishesOfObservedUsers = async (
 
 		const latestFishes = await Fish.find({
 			user: { $in: user.myHooks },
-			whenCaught: { $gt: nowLocal },
+			whenCaught: { $gte: nowLocal },
 		})
 			.limit(20)
 			.populate('user', 'nickname avatar');
