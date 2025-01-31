@@ -341,7 +341,7 @@ const quitCompetition = async (
 		nowLocal.setHours(0, 0, 0, 0);
 		compEndLocal.setHours(0, 0, 0, 0);
 
-		if (nowLocal.getTime() >= compEndLocal.getTime())
+		if ((nowLocal.getTime() >= compEndLocal.getTime()) && competition.startDate)
 			throw new AppError(
 				"You can't quit because the competition time is over. Please save the result of the competition.",
 				403
@@ -479,7 +479,7 @@ const deleteCompetition = async (
 			nowLocal.setHours(0, 0, 0, 0);
 			compEndLocal.setHours(0, 0, 0, 0);
 
-			if (nowLocal.getTime() >= compEndLocal.getTime())
+			if ((nowLocal.getTime() >= compEndLocal.getTime()) && competition.startDate)
 				throw new AppError(
 					"You can't delete the competition because the time is over. Please save the result of the competition.",
 					403

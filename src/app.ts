@@ -19,7 +19,11 @@ const PORT = process.env.PORT || 8080;
 const MONGO_CONNECTION_URI = process.env.MONGO_CONNECTION_URI!;
 
 const corsConfig = {
-	origin: ['https://bigfishes.org', 'https://www.bigfishes.org'],
+	origin: [
+		'https://bigfishes.org',
+		'https://www.bigfishes.org',
+		'http://localhost:3000',
+	],
 	credentials: true,
 };
 

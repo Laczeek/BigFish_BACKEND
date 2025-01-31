@@ -28,7 +28,8 @@ const signup = async (req: Request, res: Response, next: NextFunction) => {
 				403
 			);
 
-		const uip = req.ip;
+		const uip =
+			process.env.NODE_ENV === 'production' ? req.ip : '62.133.128.6';
 
 		if (!uip)
 			throw new AppError(
